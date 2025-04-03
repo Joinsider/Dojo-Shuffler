@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Coding Dojo Order Generator</title>
+  </head>
+  <body>
+    <h1>Order Generator</h1>
+    <form id="orderForm">
+      <label for="addPerson">Add Person:</label>
+      <button type="button" id="addPerson">Add Person</button>
+      <div id="personContainer"></div>
+      <button type="submit">Generate Order</button>
+      <button type="button" id="resetButton">Reset All</button>
+    </form>
+    <div id="result">
+      <h2>Order Result</h2>
+      <div id="orderResult"></div>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        loadPersons()
+      })
+
+      document.getElementById('addPerson').addEventListener('click', () => {
+        addPersonElement('')
+        savePersons()
+      })
+
+      document.getElementById('resetButton').addEventListener('click', () => {
+        const personContainer = document.getElementById('personContainer')
+        personContainer.innerHTML = ''
+        document.getElementById('orderResult').innerHTML = ''
+        localStorage.removeItem('dojoPersons')
+      })
+
+      function addPersonElement(name) {
+        const personContainer = document.getElementById('personContainer')
+        const personDiv = document.createElement('div')
+        personDiv.className = 'person'
+        personDiv.innerHTML = `
+                <label for="name">Name:</label>
+                <input type="text" name="name" value="${name}" required>
+                <button type="button" class="removePerson">Remove</button>
+            `
+        personContainer.appendChild(personDiv)
+
+        personDiv
+          .querySelector('.removePerson')
+          .addEventListener('click', () => {
+            personContainer.removeChild(personDiv)
+            savePersons()
+          })
+
+        personDiv
+          .querySelector('input[name="name"]')
+          .addEventListener('change', () => {
+            savePersons()
+          })
+      }
+
+      function savePersons() {
+        const persons = Array.from(
+          document.querySelectorAll('.person input[name="name"]')
+        ).map(input => input.value)
+        localStorage.setItem('dojoPersons', JSON.stringify(persons))
+      }
+
+      function loadPersons() {
+        const savedPersons = localStorage.getItem('dojoPersons')
+        if (savedPersons) {
+          const persons = JSON.parse(savedPersons)
+          persons.forEach(person => {
+            addPersonElement(person)
+          })
+        }
+      }
+
+      document.getElementById('orderForm').addEventListener('submit', event => {
+        event.preventDefault()
+        const persons = Array.from(document.querySelectorAll('.person'))
+        const shuffledPersons = shuffleArray(persons)
+
+        const orderResultDiv = document.getElementById('orderResult')
+        orderResultDiv.innerHTML = '' // Clear previous results
+
+        shuffledPersons.forEach((person, index) => {
+          orderResultDiv.innerHTML += `<p>${index + 1}. ${
+            person.querySelector('input[name="name"]').value
+          }</p>`
+        })
+      })
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[array[i], array[j]] = [array[j], array[i]] // Swap elements
+        }
+        return array
+      }
+    </script>
+  </body>
+</html>
